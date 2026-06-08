@@ -1,5 +1,6 @@
 package com.convexa.ai.convexa_ai_backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -24,6 +25,9 @@ public class CallRecord {
     @NotBlank(message = "File name is required")
     private String fileName;
 
+    @Column(length = 500)
+    private String filePath;
+
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     @NotBlank(message = "Transcript cannot be empty")
@@ -36,9 +40,37 @@ public class CallRecord {
     @Size(max = 50, message = "Sentiment should not exceed 50 characters")
     private String sentiment;
 
+    @Column(length = 5000)
+    private String insights;
+
+    private Integer overallScore;
+
+    private Integer communication;
+
+    private Integer problemResolution;
+
+    private Integer professionalism;
+
+    private Integer customerSatisfaction;
+
+    @Column(columnDefinition = "TEXT")
+    private String strengths;
+
+    @Column(columnDefinition = "TEXT")
+    private String improvements;
+
+    @Column(columnDefinition = "TEXT")
+    private String keywords;
+
     private String status;
 
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+
+    @JsonIgnore
+    private User user;
 
     @PrePersist
     public void onCreate() {

@@ -33,4 +33,12 @@ public class CallRecordService {
     public void deleteCallRecord(Long id) {
         callRecordRepository.deleteById(id);
     }
+
+    public List<CallRecord> getCallsByUserId(
+            Long userId
+    ) {
+        return callRecordRepository.findByUserId(
+                userId
+        );
+    }
 }
