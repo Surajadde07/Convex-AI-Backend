@@ -75,7 +75,15 @@ public class CallRecordController {
             // SAVE FILE
             // ===============================
 
-            String fileName = file.getOriginalFilename();
+            // ── Issue #1 fix: sanitise filename before storing ──────────────
+            // Raw filenames may contain spaces, '#', '?' and other characters
+            // that are illegal / misinterpreted in URL path segments.
+            // '#' is the worst offender: the browser strips everything from '#'
+            // onward as a fragment BEFORE sending the HTTP request, so the
+            // server never receives the full path and returns 404.
+            String rawName    = file.getOriginalFilename();
+            String fileName   = sanitiseFileName(rawName);
+            // ───────────────────────────────────────────────────────────────
 
             Path filePath = Paths.get(uploadDir, fileName);
 
@@ -461,5 +469,38 @@ public class CallRecordController {
                 .getCallsByUserId(
                         user.getId()
                 );
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Issue #1 fix — URL-safe filename sanitiser
+    //
+    //  Replaces every character that is problematic in an HTTP path segment:
+    //    • space → _  (unencoded spaces break URL parsing)
+    //    • #     → _  (browser treats as fragment; NEVER sent to server)
+    //    • ?     → _  (query-string delimiter)
+    //    • and any other non-alphanumeric char except . - _
+    //
+    //  The file extension (last dot segment) is always preserved unchanged.
+    //  Consecutive underscores are collapsed, and leading/trailing ones trimmed.
+    // ─────────────────────────────────────────────────────────────────────────
+    private String sanitiseFileName(String original) {
+        if (original == null || original.isBlank()) {
+            return "recording_" + System.currentTimeMillis() + ".mp3";
+        }
+        int dotIdx  = original.lastIndexOf('.');
+        String stem = dotIdx > 0 ? original.substring(0, dotIdx) : original;
+        String ext  = dotIdx > 0 ? original.substring(dotIdx)    : "";
+
+        // Keep only alphanumeric, dot, hyphen, underscore — replace everything else
+        String safeStem = stem.replaceAll("[^A-Za-z0-9.\\-]", "_");
+
+        // Collapse consecutive underscores and trim edge underscores
+        safeStem = safeStem.replaceAll("_+", "_").replaceAll("^_+|_+$", "");
+
+        if (safeStem.isEmpty()) {
+            safeStem = "recording_" + System.currentTimeMillis();
+        }
+
+        return safeStem + ext;
     }
 }
