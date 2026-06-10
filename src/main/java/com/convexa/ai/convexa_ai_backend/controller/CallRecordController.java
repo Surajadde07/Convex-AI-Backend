@@ -503,4 +503,42 @@ public class CallRecordController {
 
         return safeStem + ext;
     }
+
+
+    @PostMapping("/timeline")
+    public ResponseEntity<?> generateTimeline(
+            @RequestBody Map<String, String> body
+    ) {
+        try {
+            String transcript = body.get("transcript");
+            if (transcript == null || transcript.isBlank()) {
+                return ResponseEntity.badRequest().body("transcript is required");
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, String>> request = new HttpEntity<>(
+                    Map.of("transcript", transcript),
+                    headers
+            );
+
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "http://127.0.0.1:8000/timeline",
+                    request,
+                    String.class
+            );
+
+            // Return the FastAPI response directly — it's already a JSON array
+            return ResponseEntity
+                    .status(response.getStatusCode())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(response.getBody());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Return an empty timeline instead of an error so the UI degrades gracefully
+            return ResponseEntity.ok("[]");
+        }
+    }
 }
