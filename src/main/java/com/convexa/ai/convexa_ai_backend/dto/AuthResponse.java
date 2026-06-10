@@ -1,12 +1,11 @@
 package com.convexa.ai.convexa_ai_backend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Data
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class AuthResponse {
 
     private Long id;

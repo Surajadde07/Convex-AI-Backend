@@ -1,8 +1,10 @@
 package com.convexa.ai.convexa_ai_backend.controller;
 
 import com.convexa.ai.convexa_ai_backend.dto.AuthResponse;
+import com.convexa.ai.convexa_ai_backend.dto.GoogleAuthRequest;
 import com.convexa.ai.convexa_ai_backend.dto.LoginRequest;
 import com.convexa.ai.convexa_ai_backend.dto.RegisterRequest;
+import com.convexa.ai.convexa_ai_backend.service.GoogleAuthService;
 import com.convexa.ai.convexa_ai_backend.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private GoogleAuthService googleAuthService;
 
     // =========================
     // REGISTER
@@ -43,6 +48,26 @@ public class AuthController {
 
         AuthResponse response =
                 userService.login(request);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // =========================
+    // GOOGLE OAUTH
+    // =========================
+
+    /**
+     * Accepts a raw Google ID token (credential) from the frontend,
+     * verifies it server-side, and returns a Convexa JWT.
+     * A new user account is created automatically on first sign-in.
+     */
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleAuth(
+            @RequestBody GoogleAuthRequest request
+    ) {
+
+        AuthResponse response =
+                googleAuthService.authenticateWithGoogle(request);
 
         return ResponseEntity.ok(response);
     }
